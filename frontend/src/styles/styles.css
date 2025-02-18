@@ -1,0 +1,30 @@
+.upload-container, .audio-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+
+button {
+    padding: 10px 15px;
+    margin-top: 10px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+audio {
+    margin-top: 20px;
+    width: 300px;
+}
+
+.error {
+    color: red;
+    margin-top: 10px;
+}
