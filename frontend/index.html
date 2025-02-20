@@ -3,81 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Slides</title>
-    <style>
-        body {
-            background-color: black;
-            color: white;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .container {
-            text-align: center;
-        }
-        .upload-btn {
-            background-color: #4CAF50; /* Green background */
-            border: none;
-            color: white;
-            padding: 15px 32px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 8px;
-        }
-        .upload-btn:hover {
-            background-color: #45a049; /* Darker green when hovering */
-        }
-        input[type="file"] {
-            display: none; /* Hide default file input */
-        }
-    </style>
+    <title>Upload PDF</title>
 </head>
 <body>
+    <h1>Your Slides</h1>
 
-<div class="container">
-    <h1>AI Video Lecture Generator</h1>
-    <label for="file-upload" class="upload-btn">Upload Slides (PDF)</label>
-    <input type="file" id="file-upload" accept=".pdf" />
-</div>
+    <input type="file" id="fileInput" accept=".pdf,.pptx">
+    <button onclick="uploadFile()">Upload & Generate Audio</button>
+    <p id="status"></p>
 
-<script>
-    document.getElementById('file-upload').addEventListener('change', async function(event) {
-        const file = event.target.files[0];  // Get the file
-        if (!file) return;  // If no file is selected, return
+    <!-- ✅ Audio player (hidden until audio is available) -->
+    <audio id="audioPlayer" controls style="display: none;"></audio>
 
-        // Create a new FormData object to send the file
-        const formData = new FormData();
-        formData.append("file", file);
+    <script>
+        async function uploadFile() {
+            const fileInput = document.getElementById("fileInput");
+            const status = document.getElementById("status");
+            const audioPlayer = document.getElementById("audioPlayer");
 
-        try {
-            // Send a POST request to the backend to upload the file
-            const response = await fetch('http://127.0.0.1:8080/upload', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (response.ok) {
-                // Handle the response from the backend
-                const result = await response.json();
-                const slidesData = result.slides_data;  // Assuming the backend returns the slides data
-
-                // Redirect to the presentation page with the slides data
-                window.location.href = `presentation.html?slides_data=${encodeURIComponent(JSON.stringify(slidesData))}`;
-            } else {
-                alert('File upload failed.');
+            if (!fileInput.files.length) {
+                alert("Please select a PDF or PPTX file");
+                return;
             }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('An error occurred while uploading the file.');
-        }
-    });
-</script>
 
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+
+            status.innerText = "Uploading...";
+
+            try {
+                const response = await fetch("http://127.0.0.1:8080/upload", {  
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.audio_url) {
+                    // ✅ Set the audio source & play it
+                    audioPlayer.src = data.audio_url;
+                    audioPlayer.style.display = "block"; // Show player
+                    audioPlayer.play();
+                    status.innerText = "Audio generated successfully!";
+                } else {
+                    throw new Error("Invalid response: No `audio_url` found");
+                }
+            } catch (error) {
+                console.error("❌ Upload failed:", error);
+                status.innerText = "Upload failed. Try again.";
+            }
+        }
+    </script>
 </body>
 </html>
