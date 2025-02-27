@@ -6,20 +6,16 @@
     <title>Upload PDF</title>
 </head>
 <body>
-    <h1>Your Slides</h1>
+    <h1>Upload Your Slides</h1>
 
     <input type="file" id="fileInput" accept=".pdf,.pptx">
     <button onclick="uploadFile()">Upload & Generate Audio</button>
     <p id="status"></p>
 
-    <!-- ✅ Audio player (hidden until audio is available) -->
-    <audio id="audioPlayer" controls style="display: none;"></audio>
-
     <script>
         async function uploadFile() {
             const fileInput = document.getElementById("fileInput");
             const status = document.getElementById("status");
-            const audioPlayer = document.getElementById("audioPlayer");
 
             if (!fileInput.files.length) {
                 alert("Please select a PDF or PPTX file");
@@ -44,11 +40,8 @@
                 const data = await response.json();
 
                 if (data.audio_url) {
-                    // ✅ Set the audio source & play it
-                    audioPlayer.src = data.audio_url;
-                    audioPlayer.style.display = "block"; // Show player
-                    audioPlayer.play();
-                    status.innerText = "Audio generated successfully!";
+                    // ✅ Redirect to the second page with the audio URL
+                    window.location.href = `audio.html?audio_url=${encodeURIComponent(data.audio_url)}`;
                 } else {
                     throw new Error("Invalid response: No `audio_url` found");
                 }

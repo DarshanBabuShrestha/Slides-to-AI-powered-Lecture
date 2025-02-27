@@ -15,9 +15,10 @@ app = FastAPI()
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
-
+@app.get("/")
+def root():
+    return {"message": "FastAPI is running!"}
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],  # Allow frontend access
@@ -49,7 +50,7 @@ def generate_lecture_transcript_gemini(extracted_text):
     payload = {
         "contents": [{
             "parts": [{
-                "text": f"Convert the following slide text into a structured, well-explained lecture transcript that feels like a live lecture. Ensure it is natural-sounding and suitable for AI voice narration and make it below 5000 bytes:\n\n{extracted_text}"
+                "text": f"Convert the following slide text into a structured, well-explained lecture transcript that feels like a live lecture. Ensure it is natural-sounding and suitable for AI voice narration and make it below 4800 bytes:\n\n{extracted_text}"
             }]
         }]
     }
@@ -105,40 +106,45 @@ def text_to_speech(transcript):
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
     try:
+        file_ext = file.filename.split('.')[-1].lower()
         file_path = os.path.join(UPLOAD_DIR, file.filename)
-        print(f"📥 Saving file to: {file_path}")  # Debugging
 
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-       
         if not os.path.exists(file_path):
             print(f"❌ ERROR: File {file_path} was not saved properly!")
             return JSONResponse(content={"message": "File save failed."}, status_code=500)
 
         print(f"✅ File successfully saved at: {file_path}")
 
-        
-        extracted_text = extract_text_from_pdf(file_path) if file.filename.endswith('.pdf') else extract_text_from_pptx(file_path)
-        ai_transcript = generate_lecture_transcript_gemini(extracted_text)
+        # ✅ Extract text from PDF or PPTX
+        extracted_text = extract_text_from_pdf(file_path) if file_ext == 'pdf' else extract_text_from_pptx(file_path)
 
+        # ✅ Generate AI transcript
+        ai_transcript = generate_lecture_transcript_gemini(extracted_text)
         if "Error" in ai_transcript:
             return JSONResponse(content={"message": "Transcript generation failed."}, status_code=400)
 
-      
+        # ✅ Generate AI audio
         audio_filename = text_to_speech(ai_transcript)
-
         if not audio_filename:
             return JSONResponse(content={"message": "Audio generation failed."}, status_code=500)
 
-        
-        full_audio_url = f"http://127.0.0.1:8080/uploads/{audio_filename}"
-        print(f"✅ FastAPI Returning JSON Response: {full_audio_url}")  # Debugging
+        # ✅ Ensure the correct `uploads` URL
+        file_url = f"http://127.0.0.1:8080/uploads/{file.filename}"
+        audio_url = f"http://127.0.0.1:8080/uploads/{audio_filename}"
 
-        return JSONResponse(content={"audio_url": full_audio_url}, status_code=200)
+        print(f"✅ Returning JSON Response:\nFile URL: {file_url}\nAudio URL: {audio_url}")  # Debugging log
+
+        return JSONResponse(content={
+            "file_url": file_url,
+            "audio_url": audio_url,
+            
+        }, status_code=200)
 
     except Exception as e:
-        print(f"❌ FastAPI Error: {e}")  # Debugging log
+        print(f"❌ FastAPI Error: {e}")  
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
 @app.get("/")

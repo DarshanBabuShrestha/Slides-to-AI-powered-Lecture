@@ -9,7 +9,7 @@ export function UploadPage() {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
-  const navigate = useNavigate(); // 👈 Initialize navigate function
+  const navigate = useNavigate(); //  Initialize navigate function
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
@@ -24,7 +24,7 @@ export function UploadPage() {
     formData.append("file", file);
   
     try {
-      console.log("🚀 Uploading file to FastAPI..."); // Debug log
+      console.log(" Uploading file to FastAPI..."); // Debug log
   
       const response = await fetch("http://127.0.0.1:8080/upload", {
         method: "POST",
@@ -40,10 +40,10 @@ export function UploadPage() {
         setMessage("Upload successful!");
         setTimeout(() => navigate("/audio"), 1000);
       } else {
-        throw new Error("Invalid response: No `full_audio_url` found");
+        throw new Error("Invalid response: No `audio_url` found");
       }
     } catch (error) {
-      console.error("❌ Upload failed:", error);
+      console.error("Error Upload failed:", error);
       setMessage(`Upload failed: ${error.message}`);
     }
     setUploading(false);
