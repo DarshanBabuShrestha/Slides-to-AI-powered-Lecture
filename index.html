@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload PDF</title>
+    <style>
+        /* ✅ Dark Mode Background & White Text */
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: "Courier New", monospace;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        /* ✅ Centered and Bigger Typing Animation */
+        .typing-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: auto;
+        }
+        .typing-text {
+            font-size: 40px;  /* ✅ Increased Font Size */
+            border-right: 4px solid white; /* Cursor effect */
+            white-space: nowrap;
+            overflow: hidden;
+            font-family: "Courier New", monospace;
+            width: 0;
+            animation: typing 6s steps(50, end) forwards, removeCursor 0s 6s forwards;
+        }
+
+        /* ✅ Input & Button Styling */
+        input, button {
+            font-family: "Courier New", monospace;
+            font-size: 20px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #ffffff;
+            color: #121212;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #bbbbbb;
+        }
+
+        /* ✅ Typing Animation (Cursor Disappears Instantly) */
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        @keyframes removeCursor {
+            100% { border-right: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ✅ Centered, Large Text with Instant Cursor Disappearance -->
+    <div class="typing-container">
+        <h1 class="typing-text">Upload Your Slides</h1>
+    </div>
+
+    <input type="file" id="fileInput" accept=".pdf,.pptx">
+    <button onclick="uploadFile()">Upload & Generate Audio</button>
+    <p id="status"></p>
+
+    <script>
+        async function uploadFile() {
+            const fileInput = document.getElementById("fileInput");
+            const status = document.getElementById("status");
+
+            if (!fileInput.files.length) {
+                alert("Please select a PDF or PPTX file");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+
+            status.innerText = "Uploading...";
+
+            try {
+                const response = await fetch("http://127.0.0.1:8080/upload", {  
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log("✅ Upload Response:", data); // ✅ Debugging log
+
+                if (data.file_url && data.audio_url) {
+                    // ✅ Redirect to audio.html with both URLs
+                    window.location.href = `audio.html?file_url=${encodeURIComponent(data.file_url)}&audio_url=${encodeURIComponent(data.audio_url)}`;
+                } else {
+                    throw new Error("Invalid response: No `file_url` or `audio_url` found");
+                }
+            } catch (error) {
+                console.error("❌ Upload failed:", error);
+                status.innerText = "Upload failed. Try again.";
+            }
+        }
+    </script>
+</body>
+</html>
