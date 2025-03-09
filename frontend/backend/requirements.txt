@@ -1,8 +1,0 @@
-fastapi  
-uvicorn  
-pytesseract  
-python-pptx  
-numpy  
-transformers  
-ffmpeg-python  
-elevenlabs  
