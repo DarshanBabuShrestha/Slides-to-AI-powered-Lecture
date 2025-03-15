@@ -17,8 +17,11 @@ app = FastAPI()
 def read_root():
     return {"message": "Hello, Render!"}
 
+import os
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    port = int(os.getenv("PORT", 8080))
+    uvicorn.run("backend.app:app", host="0.0.0.0", port=port, reload=True)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # This is `backend/`
 JSON_FILE_PATH = os.path.join(BASE_DIR, "backend", "your_file.json")
 
