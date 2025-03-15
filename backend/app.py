@@ -10,9 +10,16 @@ import shutil
 import uuid
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-
+import json
 app = FastAPI()
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # This is `backend/`
+JSON_FILE_PATH = os.path.join(BASE_DIR, "backend", "your_file.json")
 
+# Load JSON data
+def load_json():
+    with open(JSON_FILE_PATH, "r", encoding="utf-8") as file:
+        data = json.load(file)
+    return data
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
