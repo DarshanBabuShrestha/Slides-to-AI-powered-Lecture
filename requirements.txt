@@ -7,3 +7,7 @@ transformers
 ffmpeg-python  
 elevenlabs  
 pymupdf
+google-cloud-texttospeech
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
