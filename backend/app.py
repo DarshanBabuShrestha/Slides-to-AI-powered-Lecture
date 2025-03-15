@@ -1,6 +1,6 @@
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import JSONResponse
-import fitz  # PyMuPDF for PDF text extraction
+import fitz
 from pptx import Presentation
 import os
 import requests
@@ -11,7 +11,14 @@ import uuid
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import json
+import uvicorn
 app = FastAPI()
+@app.get("/")
+def read_root():
+    return {"message": "Hello, Render!"}
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8080)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # This is `backend/`
 JSON_FILE_PATH = os.path.join(BASE_DIR, "backend", "your_file.json")
 
