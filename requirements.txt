@@ -6,3 +6,4 @@ numpy
 transformers  
 ffmpeg-python  
 elevenlabs  
+fitz
