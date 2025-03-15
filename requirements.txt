@@ -6,4 +6,5 @@ numpy
 transformers  
 ffmpeg-python  
 elevenlabs  
-fitz
+pymupdf  
+pymupdf-tools
